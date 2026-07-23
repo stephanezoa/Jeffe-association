@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+
+# Sorties de build
+dist/
+build/
+
+# Base de données de développement (contient des données seedées et des hashs)
+*.sqlite
+*.sqlite3
+apps/api/data/*.sqlite
+
+# Fichiers uploadés à l'exécution
+apps/api/uploads/
+
+# Variables d'environnement
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Divers
+.DS_Store
+coverage/
+.vscode/
+.idea/
