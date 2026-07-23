@@ -60,7 +60,17 @@ export const Navbar: React.FC = () => {
           ))}
         </ul>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-5 lg:flex">
+          <SmartLink
+            href="/connexion"
+            aria-current={isActive('/connexion') ? 'page' : undefined}
+            className={cn(
+              'text-sm transition-colors',
+              isActive('/connexion') ? 'font-semibold text-accent-blue' : 'font-medium text-ink/80 hover:text-brand-600',
+            )}
+          >
+            Se connecter
+          </SmartLink>
           <Button href="/contact" variant="brand" size="sm">
             Nous Contacter
           </Button>
@@ -96,6 +106,19 @@ export const Navbar: React.FC = () => {
                 </SmartLink>
               </li>
             ))}
+            <li>
+              <SmartLink
+                href="/connexion"
+                onClick={() => setMobileOpen(false)}
+                aria-current={isActive('/connexion') ? 'page' : undefined}
+                className={cn(
+                  'block rounded-xl px-3 py-3 text-base font-medium transition-colors hover:bg-surface-muted',
+                  isActive('/connexion') ? 'text-accent-blue' : 'text-ink',
+                )}
+              >
+                Se connecter
+              </SmartLink>
+            </li>
             <li className="pt-2">
               <Button href="/contact" variant="brand" onClick={() => setMobileOpen(false)}>
                 Nous Contacter
