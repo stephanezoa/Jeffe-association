@@ -1,5 +1,6 @@
 import type { Knex } from 'knex';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -8,8 +9,10 @@ const dbClient = process.env.DB_CLIENT || 'sqlite3';
 
 const dbPath = process.env.DB_FILENAME || path.join(__dirname, 'data/vestige.dev.sqlite');
 const dbDir = path.dirname(dbPath);
-if (!require('fs').existsSync(dbDir)) {
-  require('fs').mkdirSync(dbDir, { recursive: true });
+try {
+  if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+} catch {
+  // Système de fichiers en lecture seule (serverless) : /tmp existe déjà.
 }
 
 const config: { [key: string]: Knex.Config } = {
