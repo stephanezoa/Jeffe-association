@@ -1,15 +1,14 @@
-// Préparation de la base AVANT l'initialisation de knex (import statique dans
-// index.ts, évalué avant l'app). En serverless, seul /tmp est inscriptible : on
-// y copie la base seedée embarquée avec la fonction.
-import fs from 'node:fs';
-import path from 'node:path';
+// Préparation de la base AVANT l'initialisation de knex.
+// En serverless, seul /tmp est inscriptible : on y copie la base seedée
+// embarquée avec la fonction (voir `includeFiles` dans vercel.json).
+import fs from 'fs';
+import path from 'path';
 
 const RUNTIME_DB = '/tmp/vestige.sqlite';
 
-// seed.sqlite est livré via `includeFiles` (voir vercel.json) sous /var/task.
 const SEED_CANDIDATES = [
   path.join(process.cwd(), 'apps/api/data/seed.sqlite'),
-  path.join(process.cwd(), 'api/../apps/api/data/seed.sqlite'),
+  path.join(process.cwd(), 'data/seed.sqlite'),
 ];
 
 try {
