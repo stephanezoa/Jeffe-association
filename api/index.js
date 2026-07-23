@@ -781,24 +781,44 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// apps/api/src/modules/auth/auth.routes.ts
-var import_shared = require("@vestige/shared");
+// packages/shared/src/schemas/index.ts
 var import_zod3 = require("zod");
+var paginationSchema = import_zod3.z.object({
+  page: import_zod3.z.coerce.number().int().positive().default(1),
+  limit: import_zod3.z.coerce.number().int().positive().max(100).default(20)
+});
+var inviteMemberSchema = import_zod3.z.object({
+  targetEmail: import_zod3.z.string().email().optional(),
+  targetPhone: import_zod3.z.string().optional()
+}).refine((data) => data.targetEmail || data.targetPhone, {
+  message: "Au moins un e-mail ou un t\xE9l\xE9phone est requis pour l'invitation."
+});
+var registerWithTokenSchema = import_zod3.z.object({
+  token: import_zod3.z.string().min(1, "Le jeton d'invitation est requis"),
+  firstName: import_zod3.z.string().min(2, "Le pr\xE9nom est requis"),
+  lastName: import_zod3.z.string().min(2, "Le nom est requis"),
+  email: import_zod3.z.string().email("Adresse email invalide"),
+  phone: import_zod3.z.string().optional(),
+  password: import_zod3.z.string().min(8, "Le mot de passe doit contenir au moins 8 caract\xE8res")
+});
+
+// apps/api/src/modules/auth/auth.routes.ts
+var import_zod4 = require("zod");
 var router = (0, import_express.Router)();
 var controller = new AuthController();
-var loginSchema = import_zod3.z.object({
-  body: import_zod3.z.object({
-    email: import_zod3.z.string().email(),
-    password: import_zod3.z.string().min(1)
+var loginSchema = import_zod4.z.object({
+  body: import_zod4.z.object({
+    email: import_zod4.z.string().email(),
+    password: import_zod4.z.string().min(1)
   })
 });
-var registerSchema = import_zod3.z.object({
-  body: import_shared.registerWithTokenSchema
+var registerSchema = import_zod4.z.object({
+  body: registerWithTokenSchema
 });
-var changePasswordSchema = import_zod3.z.object({
-  body: import_zod3.z.object({
-    currentPassword: import_zod3.z.string().min(1),
-    newPassword: import_zod3.z.string().min(8)
+var changePasswordSchema = import_zod4.z.object({
+  body: import_zod4.z.object({
+    currentPassword: import_zod4.z.string().min(1),
+    newPassword: import_zod4.z.string().min(8)
   })
 });
 router.post("/register", validate(registerSchema), controller.register);
@@ -1514,24 +1534,24 @@ var ArticlesController = class {
 };
 
 // apps/api/src/modules/articles/articles.schema.ts
-var import_zod4 = require("zod");
-var createArticleSchema = import_zod4.z.object({
-  body: import_zod4.z.object({
-    title: import_zod4.z.string().min(3).max(255),
-    summary: import_zod4.z.string().max(2e3).optional().default(""),
-    content: import_zod4.z.string().min(1),
-    coverImageUrl: import_zod4.z.string().max(500).optional(),
-    status: import_zod4.z.enum(["draft", "published"]).default("draft")
+var import_zod5 = require("zod");
+var createArticleSchema = import_zod5.z.object({
+  body: import_zod5.z.object({
+    title: import_zod5.z.string().min(3).max(255),
+    summary: import_zod5.z.string().max(2e3).optional().default(""),
+    content: import_zod5.z.string().min(1),
+    coverImageUrl: import_zod5.z.string().max(500).optional(),
+    status: import_zod5.z.enum(["draft", "published"]).default("draft")
   })
 });
-var updateArticleSchema = import_zod4.z.object({
-  params: import_zod4.z.object({ id: import_zod4.z.string().min(1) }),
-  body: import_zod4.z.object({
-    title: import_zod4.z.string().min(3).max(255).optional(),
-    summary: import_zod4.z.string().max(2e3).optional(),
-    content: import_zod4.z.string().min(1).optional(),
-    coverImageUrl: import_zod4.z.string().max(500).optional(),
-    status: import_zod4.z.enum(["draft", "published"]).optional()
+var updateArticleSchema = import_zod5.z.object({
+  params: import_zod5.z.object({ id: import_zod5.z.string().min(1) }),
+  body: import_zod5.z.object({
+    title: import_zod5.z.string().min(3).max(255).optional(),
+    summary: import_zod5.z.string().max(2e3).optional(),
+    content: import_zod5.z.string().min(1).optional(),
+    coverImageUrl: import_zod5.z.string().max(500).optional(),
+    status: import_zod5.z.enum(["draft", "published"]).optional()
   })
 });
 
@@ -1713,30 +1733,30 @@ var CoursesController = class {
 };
 
 // apps/api/src/modules/courses/courses.schema.ts
-var import_zod5 = require("zod");
-var createCourseSchema = import_zod5.z.object({
-  body: import_zod5.z.object({
-    title: import_zod5.z.string().min(3).max(255),
-    description: import_zod5.z.string().max(4e3).optional().default(""),
-    duration: import_zod5.z.string().max(50).optional().default(""),
-    tags: import_zod5.z.array(import_zod5.z.string().max(60)).max(10).optional().default([]),
-    thumbnailUrl: import_zod5.z.string().max(500).optional(),
-    introVideoUrl: import_zod5.z.string().max(500).optional().default(""),
-    content: import_zod5.z.string().optional().default(""),
-    status: import_zod5.z.enum(["draft", "published", "done"]).default("draft")
+var import_zod6 = require("zod");
+var createCourseSchema = import_zod6.z.object({
+  body: import_zod6.z.object({
+    title: import_zod6.z.string().min(3).max(255),
+    description: import_zod6.z.string().max(4e3).optional().default(""),
+    duration: import_zod6.z.string().max(50).optional().default(""),
+    tags: import_zod6.z.array(import_zod6.z.string().max(60)).max(10).optional().default([]),
+    thumbnailUrl: import_zod6.z.string().max(500).optional(),
+    introVideoUrl: import_zod6.z.string().max(500).optional().default(""),
+    content: import_zod6.z.string().optional().default(""),
+    status: import_zod6.z.enum(["draft", "published", "done"]).default("draft")
   })
 });
-var updateCourseSchema = import_zod5.z.object({
-  params: import_zod5.z.object({ id: import_zod5.z.string().min(1) }),
-  body: import_zod5.z.object({
-    title: import_zod5.z.string().min(3).max(255).optional(),
-    description: import_zod5.z.string().max(4e3).optional(),
-    duration: import_zod5.z.string().max(50).optional(),
-    tags: import_zod5.z.array(import_zod5.z.string().max(60)).max(10).optional(),
-    thumbnailUrl: import_zod5.z.string().max(500).optional(),
-    introVideoUrl: import_zod5.z.string().max(500).optional(),
-    content: import_zod5.z.string().optional(),
-    status: import_zod5.z.enum(["draft", "published", "done"]).optional()
+var updateCourseSchema = import_zod6.z.object({
+  params: import_zod6.z.object({ id: import_zod6.z.string().min(1) }),
+  body: import_zod6.z.object({
+    title: import_zod6.z.string().min(3).max(255).optional(),
+    description: import_zod6.z.string().max(4e3).optional(),
+    duration: import_zod6.z.string().max(50).optional(),
+    tags: import_zod6.z.array(import_zod6.z.string().max(60)).max(10).optional(),
+    thumbnailUrl: import_zod6.z.string().max(500).optional(),
+    introVideoUrl: import_zod6.z.string().max(500).optional(),
+    content: import_zod6.z.string().optional(),
+    status: import_zod6.z.enum(["draft", "published", "done"]).optional()
   })
 });
 
@@ -1928,37 +1948,37 @@ var EventsController = class {
 };
 
 // apps/api/src/modules/events/events.schema.ts
-var import_zod6 = require("zod");
-var createEventSchema = import_zod6.z.object({
-  body: import_zod6.z.object({
-    title: import_zod6.z.string().min(3).max(255),
-    category: import_zod6.z.string().max(100).optional().default(""),
-    eventType: import_zod6.z.enum(["free", "paid"]).default("free"),
-    priceCents: import_zod6.z.coerce.number().int().min(0).optional().default(0),
-    location: import_zod6.z.string().min(2).max(255),
-    date: import_zod6.z.string().min(4),
+var import_zod7 = require("zod");
+var createEventSchema = import_zod7.z.object({
+  body: import_zod7.z.object({
+    title: import_zod7.z.string().min(3).max(255),
+    category: import_zod7.z.string().max(100).optional().default(""),
+    eventType: import_zod7.z.enum(["free", "paid"]).default("free"),
+    priceCents: import_zod7.z.coerce.number().int().min(0).optional().default(0),
+    location: import_zod7.z.string().min(2).max(255),
+    date: import_zod7.z.string().min(4),
     // ISO (AAAA-MM-JJ)
-    capacity: import_zod6.z.coerce.number().int().min(0).optional().default(0),
-    coverImageUrl: import_zod6.z.string().max(500).optional(),
-    description: import_zod6.z.string().max(4e3).optional().default(""),
-    content: import_zod6.z.string().optional().default(""),
-    status: import_zod6.z.enum(["draft", "published"]).default("draft")
+    capacity: import_zod7.z.coerce.number().int().min(0).optional().default(0),
+    coverImageUrl: import_zod7.z.string().max(500).optional(),
+    description: import_zod7.z.string().max(4e3).optional().default(""),
+    content: import_zod7.z.string().optional().default(""),
+    status: import_zod7.z.enum(["draft", "published"]).default("draft")
   })
 });
-var updateEventSchema = import_zod6.z.object({
-  params: import_zod6.z.object({ id: import_zod6.z.string().min(1) }),
-  body: import_zod6.z.object({
-    title: import_zod6.z.string().min(3).max(255).optional(),
-    category: import_zod6.z.string().max(100).optional(),
-    eventType: import_zod6.z.enum(["free", "paid"]).optional(),
-    priceCents: import_zod6.z.coerce.number().int().min(0).optional(),
-    location: import_zod6.z.string().min(2).max(255).optional(),
-    date: import_zod6.z.string().min(4).optional(),
-    capacity: import_zod6.z.coerce.number().int().min(0).optional(),
-    coverImageUrl: import_zod6.z.string().max(500).optional(),
-    description: import_zod6.z.string().max(4e3).optional(),
-    content: import_zod6.z.string().optional(),
-    status: import_zod6.z.enum(["draft", "published"]).optional()
+var updateEventSchema = import_zod7.z.object({
+  params: import_zod7.z.object({ id: import_zod7.z.string().min(1) }),
+  body: import_zod7.z.object({
+    title: import_zod7.z.string().min(3).max(255).optional(),
+    category: import_zod7.z.string().max(100).optional(),
+    eventType: import_zod7.z.enum(["free", "paid"]).optional(),
+    priceCents: import_zod7.z.coerce.number().int().min(0).optional(),
+    location: import_zod7.z.string().min(2).max(255).optional(),
+    date: import_zod7.z.string().min(4).optional(),
+    capacity: import_zod7.z.coerce.number().int().min(0).optional(),
+    coverImageUrl: import_zod7.z.string().max(500).optional(),
+    description: import_zod7.z.string().max(4e3).optional(),
+    content: import_zod7.z.string().optional(),
+    status: import_zod7.z.enum(["draft", "published"]).optional()
   })
 });
 
@@ -2022,7 +2042,7 @@ var uploads_routes_default = router9;
 
 // apps/api/src/modules/contact/contact.routes.ts
 var import_express10 = require("express");
-var import_zod7 = require("zod");
+var import_zod8 = require("zod");
 
 // apps/api/src/modules/contact/contact.service.ts
 var import_uuid11 = require("uuid");
@@ -2057,13 +2077,13 @@ var ContactController = class {
 // apps/api/src/modules/contact/contact.routes.ts
 var router10 = (0, import_express10.Router)();
 var controller10 = new ContactController();
-var contactSchema = import_zod7.z.object({
-  body: import_zod7.z.object({
-    name: import_zod7.z.string().min(2).max(150),
-    email: import_zod7.z.string().email().max(255),
-    phone: import_zod7.z.string().max(50).optional(),
-    subject: import_zod7.z.string().min(3).max(255),
-    message: import_zod7.z.string().min(10).max(5e3)
+var contactSchema = import_zod8.z.object({
+  body: import_zod8.z.object({
+    name: import_zod8.z.string().min(2).max(150),
+    email: import_zod8.z.string().email().max(255),
+    phone: import_zod8.z.string().max(50).optional(),
+    subject: import_zod8.z.string().min(3).max(255),
+    message: import_zod8.z.string().min(10).max(5e3)
   })
 });
 router10.post("/", validate(contactSchema), controller10.submit);
@@ -2071,7 +2091,7 @@ var contact_routes_default = router10;
 
 // apps/api/src/modules/members/members.routes.ts
 var import_express11 = require("express");
-var import_zod8 = require("zod");
+var import_zod9 = require("zod");
 
 // apps/api/src/modules/members/members.service.ts
 function toProfileDto(row) {
@@ -2140,12 +2160,12 @@ var MembersController = class {
 // apps/api/src/modules/members/members.routes.ts
 var router11 = (0, import_express11.Router)();
 var controller11 = new MembersController();
-var updateProfileSchema = import_zod8.z.object({
-  body: import_zod8.z.object({
-    firstName: import_zod8.z.string().min(2).max(100).optional(),
-    lastName: import_zod8.z.string().min(2).max(100).optional(),
-    email: import_zod8.z.string().email().max(255).optional(),
-    phone: import_zod8.z.string().max(50).optional()
+var updateProfileSchema = import_zod9.z.object({
+  body: import_zod9.z.object({
+    firstName: import_zod9.z.string().min(2).max(100).optional(),
+    lastName: import_zod9.z.string().min(2).max(100).optional(),
+    email: import_zod9.z.string().email().max(255).optional(),
+    phone: import_zod9.z.string().max(50).optional()
   })
 });
 router11.use(authMiddleware);

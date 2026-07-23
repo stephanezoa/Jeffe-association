@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "build:vercel": "esbuild src/vercel/handler.ts --bundle --platform=node --target=node18 --format=cjs --packages=external --outfile=../../api/index.js",
+    "build:vercel": "esbuild src/vercel/handler.ts --bundle --platform=node --target=node18 --format=cjs --packages=external --alias:@vestige/shared=../../packages/shared/src/index.ts --outfile=../../api/index.js",
     "start": "node dist/server.js",
     "db:migrate": "knex --knexfile knexfile.ts migrate:latest",
     "db:seed": "knex --knexfile knexfile.ts seed:run",
