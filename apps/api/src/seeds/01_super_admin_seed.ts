@@ -1,14 +1,22 @@
 import type { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 
 export async function seed(knex: Knex): Promise<void> {
+  const isSqlite = (knex.client.config.client as string) === 'sqlite3';
+
+  // On désactive temporairement les FK : la purge des membres se heurterait
+  // sinon au contenu seedé (articles/évènements/tickets) qui les référence.
+  if (isSqlite) await knex.raw('PRAGMA foreign_keys = OFF');
+
   // Clear existing
   await knex('member_roles').del();
   await knex('role_permissions').del();
   await knex('permissions').del();
   await knex('roles').del();
   await knex('members').del();
+
+  if (isSqlite) await knex.raw('PRAGMA foreign_keys = ON');
 
   const now = new Date().toISOString();
 
@@ -58,7 +66,7 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Super Admin Member
   const superAdminId = uuidv4();
-  const passwordHash = await argon2.hash('SuperAdminPassword123!');
+  const passwordHash = await bcrypt.hash('SuperAdminPassword123!', 10);
 
   await knex('members').insert({
     id: superAdminId,

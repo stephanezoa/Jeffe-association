@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 
 /**
  * Jeu de démonstration complet rattaché au super administrateur :
@@ -35,7 +35,7 @@ export async function seed(knex: Knex): Promise<void> {
   await knex('members').where('tree_depth', '>', 0).del();
 
   const memberRole = await knex('roles').where({ name: 'member' }).first();
-  const passwordHash = await argon2.hash('MembrePassword123!');
+  const passwordHash = await bcrypt.hash('MembrePassword123!', 10);
   let matriculeCounter = 100;
 
   // --- Réseau de parrainage ---------------------------------------------------

@@ -3,7 +3,14 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build --workspace=apps/web",
   "outputDirectory": "apps/web/dist",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30,
+      "includeFiles": "apps/api/data/seed.sqlite"
+    }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

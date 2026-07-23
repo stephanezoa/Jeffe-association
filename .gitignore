@@ -27,3 +27,6 @@ npm-debug.log*
 coverage/
 .vscode/
 .idea/
+
+# Base seedée embarquée pour le déploiement (lecture, copiée dans /tmp)
+!apps/api/data/seed.sqlite

@@ -1,4 +1,4 @@
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { knex } from '../../core/database/knex';
@@ -28,7 +28,7 @@ export class AuthService {
 
     const memberId = uuidv4();
     const matricule = `VEST-${Math.floor(100000 + Math.random() * 900000)}`;
-    const passwordHash = await argon2.hash(input.password);
+    const passwordHash = await bcrypt.hash(input.password, 10);
     const now = new Date().toISOString();
 
     const sponsorTreePath = sponsor ? sponsor.treePath : '/';
@@ -93,7 +93,7 @@ export class AuthService {
       throw AppError.forbidden('Votre compte est suspendu. Veuillez contacter l\'administration.', 'ACCOUNT_SUSPENDED');
     }
 
-    const valid = await argon2.verify(member.password_hash, password);
+    const valid = await bcrypt.compare(password, member.password_hash);
     if (!valid) {
       throw AppError.unauthorized('Identifiants invalides', 'AUTH_INVALID_CREDENTIALS');
     }
@@ -132,12 +132,12 @@ export class AuthService {
     const member = await knex('members').where({ id: memberId }).whereNull('deleted_at').first();
     if (!member) throw AppError.notFound('Membre introuvable');
 
-    const valid = await argon2.verify(member.password_hash, currentPassword);
+    const valid = await bcrypt.compare(currentPassword, member.password_hash);
     if (!valid) {
       throw AppError.badRequest('Le mot de passe actuel est incorrect.', 'AUTH_WRONG_PASSWORD');
     }
 
-    const passwordHash = await argon2.hash(newPassword);
+    const passwordHash = await bcrypt.hash(newPassword, 10);
     await knex('members').where({ id: memberId }).update({
       password_hash: passwordHash,
       updated_at: new Date().toISOString(),

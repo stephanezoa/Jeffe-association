@@ -52,24 +52,43 @@ const config: { [key: string]: Knex.Config } = {
     },
   },
 
-  production: {
-    client: process.env.DB_CLIENT || 'pg',
-    connection: process.env.DATABASE_URL ? process.env.DATABASE_URL : {
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT) || 5432,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-    },
-    pool: { min: 2, max: 20 },
-    migrations: {
-      directory: path.join(__dirname, 'dist/migrations'),
-    },
-    seeds: {
-      directory: path.join(__dirname, 'dist/seeds'),
-    },
-  },
+  // Production : SQLite par défaut (base seedée copiée dans /tmp au démarrage sur
+  // Vercel). Bascule automatique vers Postgres si POSTGRES_URL/DATABASE_URL est
+  // présent, sans changer le code.
+  production: (() => {
+    const url = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+    const usePg = process.env.DB_CLIENT === 'pg' || Boolean(url);
+
+    if (usePg) {
+      return {
+        client: 'pg' as const,
+        connection: url
+          ? { connectionString: url, ssl: { rejectUnauthorized: false } }
+          : {
+              host: process.env.DB_HOST,
+              port: Number(process.env.DB_PORT) || 5432,
+              user: process.env.DB_USER,
+              password: process.env.DB_PASSWORD,
+              database: process.env.DB_NAME,
+              ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+            },
+        pool: { min: 0, max: 5 },
+        migrations: { directory: path.join(__dirname, 'src/migrations'), extension: 'ts' },
+        seeds: { directory: path.join(__dirname, 'src/seeds'), extension: 'ts' },
+      };
+    }
+
+    return {
+      client: 'sqlite3' as const,
+      connection: { filename: process.env.DB_FILENAME || '/tmp/vestige.sqlite' },
+      useNullAsDefault: true,
+      pool: {
+        afterCreate: (conn: any, cb: any) => conn.run('PRAGMA foreign_keys = ON;', cb),
+      },
+      migrations: { directory: path.join(__dirname, 'src/migrations'), extension: 'ts' },
+      seeds: { directory: path.join(__dirname, 'src/seeds'), extension: 'ts' },
+    };
+  })(),
 };
 
 export default config;
